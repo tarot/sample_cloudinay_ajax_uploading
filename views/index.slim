@@ -1,0 +1,26 @@
+doctype html
+html
+  body
+    form enctype="multipart/form-data" method="POST"
+      input type="file" name="file"
+      input type="submit"
+    script src="https://code.jquery.com/jquery-2.1.3.min.js"
+    coffee:
+      $ ->
+        $('form').on 'submit', (event) ->
+          event.preventDefault()
+          $('pre').remove()
+          $.get('/cred').then (cred) =>
+            @setAttribute 'action', cred.endpoint
+            Object.keys(cred.params).forEach (e) =>
+              $('<input type="hidden"/>').attr('name', e).val(cred.params[e]).appendTo(@)
+            $.ajax
+              method: 'POST'
+              url: cred.endpoint
+              data: new FormData(@)
+              processData: false
+              contentType: false
+            .then (result) ->
+              $('<pre/>').text(JSON.stringify(result, null, 2)).appendTo('body')
+            .fail (xhr) ->
+              $('<pre/>').text(JSON.stringify(xhr.responseJSON, null, 2)).appendTo('body')
